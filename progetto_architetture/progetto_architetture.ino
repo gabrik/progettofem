@@ -31,7 +31,7 @@
        if(c=='H')
          digitalWrite(pinLed,HIGH);
        if(c=='L')
-         digitalWrite(pinLed,HIGH);
+         digitalWrite(pinLed,LOW);
      } 
        
     }  
