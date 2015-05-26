@@ -8,7 +8,7 @@
     const int pinBtRx = 10;
     const int pinLed = 13;
     
-    SofwareSerial bt(pinBtTx,pinBtRx);
+    SofwareSerial bt(pinBtRx,pinBtTx);
     
     
     void setup()  
