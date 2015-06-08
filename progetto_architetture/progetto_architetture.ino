@@ -16,11 +16,15 @@ int pos = 0;
 const int btBoud = 115200;
 const int pinBtTx = 11;
 const int pinBtRx = 10;
-const int pinLed = 13;
-
+int x=A5;
+int cont=0;
+char c;
 
 const int pinLCDRx = 13;
 const int pinLCDTx = 12;
+
+
+int state=0;
 
 SoftwareSerial bt(pinBtRx, pinBtTx);
 SoftwareSerial lcd(pinLCDRx, pinLCDTx);
@@ -48,7 +52,6 @@ void setup()
 
   delay(1000);
 
-
   bt.begin(9600);
   while (!bt);
   Serial.println("bt open");
@@ -72,20 +75,43 @@ void setup()
   lcd.write(12);
 
 
-  pinMode(pinLed, OUTPUT);
+  //pinMode(pinLed, OUTPUT);
   myservo.attach(8);
+
+  pinMode(x, INPUT);
+
+
 
 }
 
 void loop()
 {
 
-
-
+  //Serial.println(myservo.read());
   HttpClient client;
+  //Serial.println(state);
+ Serial.println(analogRead(x));
+
+  if (analogRead(x)>450 && state==0) {
+       if(cont==0){
+      lcd.write(12);
+      lcd.print("Accesso illecito!!!");
+      Serial.println("Accesso illecito");
+       String postData = "{\"door\":\"Garage Door\",\"who\":\"Ladro\",\"id_house\":1}";
+      String httpDest = "http://54.154.114.53/api/alarm/new";
+      String httpBody = "req=" + postData;
+      client.post(httpDest, httpBody);
+      delay(4000);
+      lcd.write(12);
+    }else{
+      lcd.write(12);
+    }
+    cont=1;
+    }
+      
 
   if (bt.available()) {
-    char c = (char)bt.read();
+     c = (char)bt.read();
     Serial.println(c);
     lcd.write(12);
 
@@ -95,22 +121,26 @@ void loop()
     }*/
 
 
+
     if (c == '1') {
-
-
+      cont=0;
+      state = 1;
       lcd.print("Aperto ");
       lcd.print(c);
       for (pos = 0; pos <= 175; pos++) {
         myservo.write(pos);
       }
-      digitalWrite(pinLed, HIGH);
 
 
       delay(1000);
       lcd.write(12);
 
       // Make a HTTP request:
-      client.get("http://192.168.1.4:8888/hello");
+      //client.get("http://54.154.114.53/api/access/new");
+      String postData = "{\"door\":\"Garage Door\",\"who\":\"Salvatore\",\"id_house\":1}";
+      String httpDest = "http://54.154.114.53/api/access/new";
+      String httpBody = "req=" + postData;
+      client.post(httpDest, httpBody);
       while (client.available()) {
         char cc = client.read();
         lcd.print(cc);
@@ -135,18 +165,22 @@ void loop()
 
 
     if (c == '0') {
+      cont=0;
       lcd.print("Chiuso ");
       lcd.print(c);
       for (pos = 175; pos >= 0; pos--) {
         myservo.write(pos);
       }
-      digitalWrite(pinLed, LOW);
+      state = 0;
+
+
+
 
       delay(1000);
       lcd.write(12);
 
-      String postData = "{\"id\":3,\"door\":\"Garage Door\",\"who\":\"Salvatore\",\"time\":\"2015-06-04T11:54:21.861436574+02:00\"}";
-      String httpDest = "http://192.168.1.4:8888/access/new";
+       String postData = "{\"door\":\"Garage Door\",\"who\":\"Salvatore\",\"id_house\":1}";
+      String httpDest = "http://54.154.114.53/api/exit/new";
       String httpBody = "req=" + postData;
       client.post(httpDest, httpBody);
 
@@ -158,7 +192,7 @@ void loop()
       delay(2000);
       lcd.write(12);
 
-      delay(2000);
+      delay(1000);
       lcd.write(12);
       lcd.print("Uscita registrata sul server");
 
